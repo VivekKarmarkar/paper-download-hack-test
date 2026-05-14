@@ -1,0 +1,43 @@
+# --- Sensitive / personal ---
+affection.md
+
+# --- Copyright-restricted artifacts (Sci-Hub-sourced PDFs, large) ---
+papers/
+
+# --- Browser session snapshots ---
+.playwright-mcp/
+
+# --- Local Claude Code project state ---
+.claude/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+
+# --- Secrets ---
+.env
+.env.local
+.env.*.local
+*.secret
+*.pem
+*.key
+
+# --- OS / editor noise ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# --- Logs and tmp ---
+*.log
+tmp/
+temp/
