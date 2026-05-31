@@ -1,258 +1,175 @@
-# New ideas for the paper-discovery pipeline
+# New ideas — the sister stack for the repo source
 
-Captured during a brainstorm session, then refined in a follow-up voice
-conversation that sharpened the architecture significantly. The original
-sketch framed three new skills as additions to the existing pipeline.
-The refinement realized they actually form a **shortcut branch** that
-bypasses the verify + validate stages entirely.
+This document captures the **sister stack**: a parallel set of four new
+skills that mirror the existing paper-discovery stack's shape but operate
+on a **third source** of papers: the user's local repository tree. The
+sister stack runs independently of the existing stack. They share no code.
 
-## The load-bearing insight
+## The Cardinal Rule constraint
 
-The existing pipeline is:
+**Don't touch what works.** The existing stack (training-data discovery,
+web-search discovery, verify, validate, AI-enrich) is shipped, deployed,
+and working. None of those skills get modified, generalized, or extended.
+The sister stack consists of FOUR ENTIRELY NEW SKILLS that parallel the
+existing stack's shape, each dedicated to the repo source.
 
-```
-discover (memory / web) → verify (OpenAlex) → validate (human gate) → AI-enrich → download
-```
-
-The verify and validate stages exist for *specific failure modes of
-generative sources*:
-
-- **Verify** catches hallucinations — the candidate from memory or web
-  might be a made-up paper.
-- **Validate** is the human gate — "do I actually want this paper in
-  my corpus?"
-
-For a **PDF that already exists on disk in your folder**, these two
-gates collapse for **different reasons** — and the distinction matters:
-
-- **Verify is *strictly* redundant.** A PDF on disk literally cannot
-  be a hallucination. It's right there. You can `cat` it. The
-  epistemic guarantee is absolute.
-
-- **Validate is only *practically* redundant — NOT strictly.** Files
-  on disk *might* have landed there because the user explicitly placed
-  them — in which case the "I want this" vote was already cast. But
-  they might also have landed there via an autonomous skill running
-  with relaxed permissions (e.g. `paper-download-hack` invoked from a
-  scheduled job, or a `literature-download-hack` run the user has
-  since forgotten about). In that case the file's presence is NOT
-  evidence that the user explicitly approved it for their canonical
-  corpus. The validate gate's role — "yes, I actually want this paper
-  in my library" — is conceptually still meaningful, even if in
-  practice the user often won't bother running it.
-
-So the new branch collapses to one step **by default** for convenience:
-discover-and-enrich. Walk the disk, hit OpenAlex per PDF, write the
-same rich metadata block format `identify-papers-ai` produces. But an
-**optional validate step** should remain available — same pattern as
-the existing `identify-and-verify-and-validate-papers` skill, which
-defaults to approve-all and opens a GTK dialog only when `--interactive`
-is passed. The user can choose to curate; they're just not forced to.
-
-The two pipelines side-by-side:
-
-```
-GENERATIVE (existing):  discover → verify → validate → AI-enrich → download
-                                    └─ strictly required (hallucination defense)
-                                              └─ practically required (corpus gate)
-
-ON-DISK    (new):       discover-and-enrich → [optional validate] → (merge)
-                        └─ verify collapsed (strict)
-                                              └─ validate is opt-in, not absent
-```
-
-The generalizable principle, properly stated:
-
-- **A stage is *strictly* redundant** when the input guarantees the
-  failure mode the stage was defending against cannot occur. Verify is
-  strictly redundant for on-disk sources because hallucination is
-  impossible for files that exist.
-
-- **A stage is *practically* redundant** when the user usually doesn't
-  bother running it, but the failure mode it defends against is still
-  conceptually possible. Validate is practically redundant for on-disk
-  sources because autonomous skills can deposit files without the
-  user's explicit consent — the human-gate role is still real, even
-  if usually skipped.
-
-Strictly redundant stages can be removed. Practically redundant stages
-should be made opt-in, not removed. **Match the pipeline's defaults to
-typical use, but don't surgically remove gates whose underlying failure
-mode can still occur.**
+The two stacks run independently. Their outputs may be merged at the very
+end via a separate skill (a topic for a future conversation), but the
+stacks themselves don't intersect.
 
 ---
 
-## Skill 1 — `/identify-papers-folder <path>`
+## The sister stack — four new skills
 
-A **fourth source** of identified papers, the first whose origin is
-"what already exists on disk" rather than "what I want to find."
+### Stage 1 — DISCOVER: `/identify-papers-repo`
 
-| Skill | Origin of papers | Pipeline path |
-|---|---|---|
-| `identify-papers-training-data` | Model memory recall | Full (verify + validate + enrich) |
-| `identify-papers-websearch` | Live web swarm | Full (verify + validate + enrich) |
-| `identify-papers-ai` | Validated list + metadata | Cap-stone of the full path |
-| **`identify-papers-folder`** | **PDFs on disk (flat folder)** | **Shortcut (enrich; optional validate)** |
-| **`identify-papers-tree`** | **PDFs on disk (tree)** | **Shortcut (enrich; optional validate)** |
+The discover stage for the repo source. Input: a repo root.
 
-### Behavior
+**How it works:** spawns a **parallel agent swarm** across the repository
+tree. Each agent is assigned a sub-tree and walks it. At every folder, the
+agent decides "does this look like a paper-bearing location?" using
+heuristics:
 
-1. Take a folder path (no default — explicit is honest about scope).
-2. For each `*.pdf` in the folder, run `/paper-metadata`'s `resolve()` —
-   which already handles `PDF path → DOI from first page → OpenAlex`
-   natively.
-3. Write one rich metadata block per resolved PDF to
-   `<folder>_bibliography.md`, in the same per-entry format as
-   `identified_papers_ai_info.md`.
-4. PDFs that can't be resolved go to a **separate** `<folder>_unresolved.md`
-   file — NOT as placeholders in the main bibliography. Keep the main
-   file clean; let the dead-letter queue catch the failures.
+- Presence of PDF files
+- Filename patterns that suggest paper-author-year naming
+- First-page text patterns (DOI present, abstract structure, etc.)
 
-### Resolved design decisions (from voice follow-up)
+For every PDF the agent thinks is a paper, it records two things:
 
-- **Unresolved PDFs** → separate `unresolved.md` file. No placeholders
-  in the main bibliography. Rationale: load-bearing papers will get
-  flagged during later refinement; a clean main file beats a noisy one
-  cluttered with "title: unknown" rows.
-- **Default folder** → no default, require explicit path. Honest about
-  scope; the skill genuinely works on any folder, not just `papers/`.
-- **Output filename** → `<basename>_bibliography.md` + `<basename>_unresolved.md`,
-  both written to the current working directory.
+- The **address** (absolute path to the PDF)
+- A **best-effort title** (extracted from first-page text or filename)
 
----
+**Output:** a candidate list of (address, title) pairs.
 
-## Skill 2 — `/identify-papers-tree <root>`
+**Properties of this output:**
 
-Recursive variant. **NOT a flag on `identify-papers-folder`** — separate
-skill, because the recursive case introduces problems the flat case
-never has.
+- Hallucination-free — every entry corresponds to a real file on disk.
+- BUT can contain misclassifications — slide decks, manuals, course PDFs,
+  receipts that the agent thought looked paper-shaped but aren't actually
+  research papers.
 
-### Why it's its own skill, not `--recursive`
+### Stage 2 — VERIFY: `/identify-and-verify-repo-papers`
 
-A flag would force one skill to carry two very different scopes of
-concern: scanning *a known folder* vs *foraging a repo*.
+Loops through the Stage 1 candidate list, runs OpenAlex on each title,
+and drops the misclassifications. This is the sister stack's verify gate.
 
-| Concern | Flat folder | Tree |
-|---|---|---|
-| Which subfolders to descend into | n/a | Skip `.git/`, `node_modules/`, `.venv/`, `__pycache__/`, etc. |
-| Symlink handling | n/a | **Off by default** (avoids infinite loops on cyclic symlinks) |
-| PDF-is-a-paper filter | Assume yes | **Required** — repos have manuals, slide decks, course PDFs, receipts |
-| Provenance | Filename only | **Path matters** — `papers/foundational/X.pdf` carries semantic meaning |
-| Performance | 20–100 PDFs | 5000+ possible; needs `(mtime, sha1) → DOI` cache |
-| Output format extension | Same as family | Same — **plus** a `**Source path:**` field in metadata block |
+Importantly: **verify is NOT redundant here.** Earlier brainstorms
+suggested it might be (because PDFs on disk can't be hallucinated). That
+reasoning held only under the assumption of *manual* paper-bearing folder
+specification. Once the discover stage uses an automated parallel agent
+swarm with heuristic classification, misclassifications become a real
+failure mode — and verify's job is to catch them. Same OpenAlex check as
+the existing verify skill, different failure mode being defended against:
 
-### Resolved design decisions (from voice follow-up)
+- Existing verify (on training-data + websearch): catches hallucinations.
+- Sister verify (on repo): catches misclassifications.
 
-- **Depth** → full traversal, root to every leaf. No limit.
-- **Symlinks** → off by default to prevent infinite recursion on cyclic
-  symlinks (common in messy repos with build artifacts). Symlinked
-  branches just don't get descended into. Opt-in `--follow-symlinks`
-  flag for the rare case where you want them.
-- **Unresolved PDFs** → same as flat folder, separate `unresolved.md`
-  file (with source paths preserved so you can find them again).
+### Stage 3 — VALIDATE: `/identify-and-verify-and-validate-repo-papers`
 
-### The unlock the tree version gives you
+The sister stack's human gate. **Default is approve-all** (no UI, the
+verified list passes through unchanged) so the sister stack runs safely
+in automated pipelines. Pass `--interactive` to open a GTK dialog with
+the standard three-button approval pattern (Approve All / Approve None /
+Approve Selections + Submit).
 
-A **map of your repo's papers**. The bibliography file becomes a
-*physical layout*: "the Krenn-Melvin paper exists at three places —
-`papers/`, `experiments/baseline-old/refs/`, and `archive/2024-Q3/`.
-Pick which to keep."
+Validate is *practically* redundant for the repo source — most of the time
+the user won't bother running it interactively — but the option is preserved
+because a paper landing on disk via an autonomous skill doesn't always
+mean the user explicitly approved it for their canonical corpus.
 
-That's only possible when path is a first-class field, and only
-meaningful when traversal is non-flat. The flat version never sees this.
+### Stage 4 — CAP-STONE: `/identify-papers-repo-final`
 
-Also: with the recursive version you can finally answer "do I have
-multiple copies of the same paper scattered across this repo?" — a real
-Marie-Kondo-for-academic-PDFs moment that's been silently impossible
-until now.
+The sister stack's enrichment cap-stone. Loops through the validated repo
+entries, hits OpenAlex per paper, and writes the rich metadata block per
+entry (authors with affiliations, year, venue, type, citations, OA status,
+topics, full abstract). Output file: `identified_papers_repo_final.md`.
 
-### Heuristics for "is this PDF a paper?"
-
-Necessary because recursive scans pick up false positives:
-
-- First-page text contains a DOI pattern → YES
-- OpenAlex title-search returns hit above some overlap threshold → YES
-- Filename contains an author+year pattern → MAYBE (best-effort)
-- None of the above → goes to `unresolved.md`, doesn't pollute the
-  main bibliography
+The role mirrors the existing cap-stone, but on the repo branch only.
+Could not be called `/identify-papers-ai` (Cardinal Rule + name doesn't
+fit — AI isn't the source for repo).
 
 ---
 
-## Skill 3 — `/merge-paper-lists <out.md> <in1.md> <in2.md> ...`
+## The two-stack picture
 
-The combinator. Concatenates any number of bibliography-format `.md`
-files into one canonical view, deduping by DOI (primary) or normalized
-title (fallback) — the exact same key used elsewhere in the pipeline.
+```
+EXISTING STACK (untouched):
+  training-data ─┐
+                 ├─→ verify → validate → identify-papers-ai → identified_papers_ai_info.md
+  websearch    ─┘
 
-### Resolved design decision (from voice follow-up)
+SISTER STACK (new, parallels the shape):
+  repo  ─→  identify-papers-repo
+                  → identify-and-verify-repo-papers
+                      → identify-and-verify-and-validate-repo-papers
+                          → identify-papers-repo-final
+                              → identified_papers_repo_final.md
+```
 
-- **Dedup winner** → first-seen wins. Source provenance doesn't matter,
-  frequency doesn't matter, "which version of the entry has more
-  metadata" doesn't matter. A duplicate is a duplicate — pick one,
-  any one, deterministically. First-seen is the simplest deterministic
-  rule and gives the user control via argument order if they care.
+The two stacks produce two separate output files. They never share state.
+A future skill may merge their outputs, but that's a separate concern.
 
 ---
 
-## What this composition unlocks
+## Why this shape (architectural notes)
 
-Three workflows that don't exist today:
+1. **Sister-stack rather than reuse** — Cardinal Rule. The existing
+   verify, validate, and AI-enrich skills don't get touched, generalized,
+   or extended. The sister stack stands on its own.
 
-1. **"What's in my advisor's old paper folder?"** — point
-   `/identify-papers-folder` at it, get a bibliography of what's there.
+2. **Parallel agent swarm at discover** — repositories can be huge.
+   Sequential per-PDF processing is too slow. The discover stage spawns
+   agents over sub-trees so the traversal happens in parallel.
 
-2. **"Are any papers in my library missing from my literature pipeline?"** —
-   diff the bibliography file against `identified_papers_ai_info.md`.
-   Papers in the library but not the pipeline are *unindexed* knowledge;
-   papers in the pipeline but not the library are *undownloaded* targets.
+3. **Verify earns its keep on the repo branch** — even though PDFs on
+   disk can't be hallucinated, automated heuristic classification at
+   discover time WILL produce false positives. Verify catches them via
+   OpenAlex. Different failure mode than the existing stack's verify,
+   same defensive role.
 
-3. **"Give me one bibliography that includes both my old library AND
-   new discoveries."**
+4. **Validate stays opt-in** — same pattern as the existing validate
+   skill. Default is no-UI approve-all so the sister stack composes
+   safely in automated pipelines; `--interactive` opens the GTK dialog
+   for users who want to curate.
 
-   ```
-   /identify-papers-tree ~/research
-   /literature-download-hack "<topic>"
-   /merge-paper-lists all_papers.md research_tree_bibliography.md identified_papers_ai_info.md
-   ```
-
-The pipeline graduates from "tool for discovering new papers about a
-topic" to "tool for managing a literature corpus that spans both my
-history and my future."
+5. **`-final` suffix on the cap-stone** — captures the role (terminal
+   output of the sister stack) without baking in source assumptions the
+   way the existing `-ai` suffix did. If a future source is added (e.g.
+   Zotero, arXiv feed), the naming pattern generalizes: `-<source>-final`.
 
 ---
 
 ## Status
 
-Brainstorm + refinement complete. Architecture is fully spec'd, all
-resolved design questions documented. Nothing built yet.
-
-**One open implementation question** (added in the strict-vs-practical
-refinement): how should the *optional validate step* be plugged into the
-on-disk branch? Two viable options:
-
-- **(a)** Folder/tree skills grow their own `--interactive` flag that
-  opens the GTK dialog on the produced bibliography before writing.
-- **(b)** The existing `identify-and-verify-and-validate-papers` skill
-  is generalized to operate on any bibliography file, not just the
-  verified one — making it a standalone validate-pass step that can be
-  composed with anything.
-
-Lean (b) for Unix-philosophy reasons (one skill, one job, composable),
-but defer the call to build time.
+Design captured. Nothing built.
 
 **Suggested build order:**
 
-1. **`/identify-papers-folder`** — simplest, lowest blast radius.
-   Validates the shortcut-branch assumption (that the OpenAlex
-   resolution + same-format output actually work end-to-end on real
-   PDFs). Also validates that `/paper-metadata`'s `resolve()` does
-   what we think it does when called in bulk.
+1. `/identify-papers-repo` first — without the discover stage producing
+   output, the rest of the sister stack has nothing to operate on.
+   Validates the parallel-agent-swarm pattern + the heuristic
+   classification before downstream stages are built.
 
-2. **`/merge-paper-lists`** — immediately useful as soon as folder works,
-   because you'll want to combine the new folder-bibliography with the
-   existing `identified_papers_ai_info.md`.
+2. `/identify-and-verify-repo-papers` — once stage 1 produces candidate
+   files, the verify gate is the next thing to validate (does OpenAlex
+   correctly reject the misclassifications?).
 
-3. **`/identify-papers-tree`** — highest payoff but most failure modes
-   (skip-list calibration, symlink handling, paper-vs-not-paper
-   heuristics, caching). Build after the simpler two have shaken out
-   the OpenAlex-bulk-resolve patterns.
+3. `/identify-and-verify-and-validate-repo-papers` — defer until stages
+   1 and 2 are working. The GTK dialog is well-understood (sister to
+   the existing validate skill's dialog), so this is mostly a thin
+   wrapper.
+
+4. `/identify-papers-repo-final` — the cap-stone. Easy once the
+   metadata-enrichment pattern is fluent (same shape as the existing
+   AI-enrich skill, different source).
+
+## Out of scope for this document
+
+- **Merging sister-stack output with the existing stack's output.**
+  This is a separate skill, separate conversation.
+- **Folder-only and tree-only variants from the earlier brainstorm.**
+  Subsumed into `/identify-papers-repo`'s parallel-agent traversal —
+  the discover stage walks the whole repo tree by default. If targeted
+  scans of a single folder or single tree root become useful later,
+  they'd be additional sister-stack-style skills, not modifications
+  to the four above.
