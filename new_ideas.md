@@ -22,31 +22,63 @@ generative sources*:
 - **Validate** is the human gate — "do I actually want this paper in
   my corpus?"
 
-For a **PDF that already exists on disk in your folder**, both gates are
-genuinely redundant:
+For a **PDF that already exists on disk in your folder**, these two
+gates collapse for **different reasons** — and the distinction matters:
 
-- It can't be hallucinated. It's right there. You can `cat` it.
-- You already cast the "I want this" vote when you put the file there.
+- **Verify is *strictly* redundant.** A PDF on disk literally cannot
+  be a hallucination. It's right there. You can `cat` it. The
+  epistemic guarantee is absolute.
 
-So the new branch collapses to one step: **discover-and-enrich**. Walk the
-disk, hit OpenAlex per PDF, write the same rich metadata block format
-`identify-papers-ai` produces. No verifier in between. No GTK approval
-dialog. Output is identical in shape to `identified_papers_ai_info.md`,
-so the downstream `merge-paper-lists` step doesn't care which branch
-produced which file.
+- **Validate is only *practically* redundant — NOT strictly.** Files
+  on disk *might* have landed there because the user explicitly placed
+  them — in which case the "I want this" vote was already cast. But
+  they might also have landed there via an autonomous skill running
+  with relaxed permissions (e.g. `paper-download-hack` invoked from a
+  scheduled job, or a `literature-download-hack` run the user has
+  since forgotten about). In that case the file's presence is NOT
+  evidence that the user explicitly approved it for their canonical
+  corpus. The validate gate's role — "yes, I actually want this paper
+  in my library" — is conceptually still meaningful, even if in
+  practice the user often won't bother running it.
+
+So the new branch collapses to one step **by default** for convenience:
+discover-and-enrich. Walk the disk, hit OpenAlex per PDF, write the
+same rich metadata block format `identify-papers-ai` produces. But an
+**optional validate step** should remain available — same pattern as
+the existing `identify-and-verify-and-validate-papers` skill, which
+defaults to approve-all and opens a GTK dialog only when `--interactive`
+is passed. The user can choose to curate; they're just not forced to.
 
 The two pipelines side-by-side:
 
 ```
 GENERATIVE (existing):  discover → verify → validate → AI-enrich → download
-ON-DISK    (new):       discover-and-enrich                     → (merge)
+                                    └─ strictly required (hallucination defense)
+                                              └─ practically required (corpus gate)
+
+ON-DISK    (new):       discover-and-enrich → [optional validate] → (merge)
+                        └─ verify collapsed (strict)
+                                              └─ validate is opt-in, not absent
 ```
 
-That's a generalizable principle worth naming: **the more trusted the
-source, the more pipeline stages collapse.** Verify and validate aren't
-about being thorough — they're defenses against the specific epistemic
-uncertainty of generative sources. Match the pipeline's complexity to
-the trust level of the input.
+The generalizable principle, properly stated:
+
+- **A stage is *strictly* redundant** when the input guarantees the
+  failure mode the stage was defending against cannot occur. Verify is
+  strictly redundant for on-disk sources because hallucination is
+  impossible for files that exist.
+
+- **A stage is *practically* redundant** when the user usually doesn't
+  bother running it, but the failure mode it defends against is still
+  conceptually possible. Validate is practically redundant for on-disk
+  sources because autonomous skills can deposit files without the
+  user's explicit consent — the human-gate role is still real, even
+  if usually skipped.
+
+Strictly redundant stages can be removed. Practically redundant stages
+should be made opt-in, not removed. **Match the pipeline's defaults to
+typical use, but don't surgically remove gates whose underlying failure
+mode can still occur.**
 
 ---
 
@@ -60,8 +92,8 @@ A **fourth source** of identified papers, the first whose origin is
 | `identify-papers-training-data` | Model memory recall | Full (verify + validate + enrich) |
 | `identify-papers-websearch` | Live web swarm | Full (verify + validate + enrich) |
 | `identify-papers-ai` | Validated list + metadata | Cap-stone of the full path |
-| **`identify-papers-folder`** | **PDFs on disk (flat folder)** | **Shortcut (enrich only)** |
-| **`identify-papers-tree`** | **PDFs on disk (tree)** | **Shortcut (enrich only)** |
+| **`identify-papers-folder`** | **PDFs on disk (flat folder)** | **Shortcut (enrich; optional validate)** |
+| **`identify-papers-tree`** | **PDFs on disk (tree)** | **Shortcut (enrich; optional validate)** |
 
 ### Behavior
 
@@ -191,8 +223,22 @@ history and my future."
 
 ## Status
 
-Brainstorm + refinement complete. Architecture is fully spec'd, design
-questions are resolved. Nothing built yet.
+Brainstorm + refinement complete. Architecture is fully spec'd, all
+resolved design questions documented. Nothing built yet.
+
+**One open implementation question** (added in the strict-vs-practical
+refinement): how should the *optional validate step* be plugged into the
+on-disk branch? Two viable options:
+
+- **(a)** Folder/tree skills grow their own `--interactive` flag that
+  opens the GTK dialog on the produced bibliography before writing.
+- **(b)** The existing `identify-and-verify-and-validate-papers` skill
+  is generalized to operate on any bibliography file, not just the
+  verified one — making it a standalone validate-pass step that can be
+  composed with anything.
+
+Lean (b) for Unix-philosophy reasons (one skill, one job, composable),
+but defer the call to build time.
 
 **Suggested build order:**
 
