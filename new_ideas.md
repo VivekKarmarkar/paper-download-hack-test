@@ -64,6 +64,45 @@ the existing verify skill, different failure mode being defended against:
 - Existing verify (on training-data + websearch): catches hallucinations.
 - Sister verify (on repo): catches misclassifications.
 
+**This stage also handles deduplication.**
+
+Repository scans naturally produce duplicates — the same paper can live
+at multiple file paths in a single repo (one copy in
+`papers/foundational/`, another in `experiments/baseline/refs/`, a third
+in `archive/2024/`). The verify stage collapses these into a single
+verified entry using the same dedup keys as the existing stack:
+
+- **Primary key:** DOI (regex-extracted: `10\.\d{4,9}/[^\s/]+`)
+- **Fallback key:** normalized title (lowercased, non-word chars stripped)
+
+**Resolution rule when duplicates collapse: address-union, NOT first-seen.**
+The verified entry's metadata carries ALL the file paths from the
+collapsed duplicates as a list. This preserves the repo-location map —
+the Marie-Kondo unlock that lets the user later ask "do I have multiple
+copies of this paper, and where do they live?"
+
+When a third candidate later dedupes to an existing verified entry, its
+address gets appended to the list.
+
+**Output schema addition for the sister stack:** each verified entry's
+metadata block gains a `**Source paths:**` list field. For papers that
+appear only once in the repo (the common case), the list has length 1
+and the format gracefully degrades. For duplicates, the list lengthens.
+
+Example metadata block excerpt:
+
+```
+**Source paths:**
+  - /papers/foundational/krenn-melvin.pdf
+  - /old-backup/krenn-2016.pdf
+  - /experiments/baseline/refs/2016-prl-zeilinger.pdf
+```
+
+This format extension is **specific to the sister stack** — the existing
+stack's per-entry block format stays unchanged (Cardinal Rule honored).
+The `Source paths` field carries through Stages 3 and 4, ending up in
+the final bibliography written by `/identify-papers-repo-final`.
+
 ### Stage 3 — VALIDATE: `/identify-and-verify-and-validate-repo-papers`
 
 The sister stack's human gate. **Default is approve-all** (no UI, the
