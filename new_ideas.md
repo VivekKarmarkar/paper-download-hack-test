@@ -228,6 +228,30 @@ user curated lands in the bibliography.
 
 ---
 
+## Cross-stack merger: `/merge-paper-lists`
+
+Purpose: combine any subset of the three stack output files into one
+canonical bibliography.
+
+**Inputs (any subset):**
+- `identified_papers_ai_info.md` (Stack 1)
+- `identified_papers_repo_final.md` (Stack 2)
+- `identified_papers_user.md` (Stack 3)
+
+**Output:** `all_papers.md`
+
+**Logic:**
+- Dedup: DOI primary, normalized title fallback. Same key strategy used
+  elsewhere in the pipeline.
+- One entry per unique paper. First-seen wins. **No source tracking. No
+  frequency counter.**
+- `Source paths` fields (if present in inputs from Stacks 2 or 3) get
+  unioned in the merged entry.
+
+That's it.
+
+---
+
 ## Architectural notes (covering both new stacks)
 
 1. **Sister-stack rather than reuse** — Cardinal Rule. The existing
@@ -294,13 +318,10 @@ Design captured for both new stacks. Nothing built.
 7. **`/identify-papers-repo-final`** — Stack 2 cap-stone. Easy by the
    time everything else is built.
 
-## Out of scope for this document
+8. **`/merge-paper-lists`** — the cross-stack merger. Build last, after
+   all three stacks have produced sample outputs to merge against.
 
-- **Merging outputs across stacks.** A potential future skill may take
-  outputs from any combination of Stack 1's `identified_papers_ai_info.md`,
-  Stack 2's `identified_papers_repo_final.md`, and Stack 3's
-  `identified_papers_user.md` and produce one unified bibliography.
-  That's a separate conversation about a separate skill.
+## Out of scope for this document
 
 - **Hybrid scans.** A repo that has both a hand-curated `papers/` folder
   AND messy sub-folders is currently handled by running BOTH Stack 3
