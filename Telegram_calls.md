@@ -2554,3 +2554,721 @@ Stack 2 is out of finishing_touches entirely — nothing to do there, just decid
 ```
 
 ---
+
+## 2026-06-01T23:46:55-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** text
+
+**Chat ID:** 8558787718
+
+**Reply text:** Committed and pushed to main — e3c2b58.
+
+Included:
+• finishing_touches.md (2 points: identify-papers-all router → 2nd-gen voice-writing-sample; investigate Zotero)
+• stack2_elimination_reasoning.md (the standalone decision doc)
+• test-example/ (the 3 bibliography PDFs)
+• updated session notes
+
+No secrets staged; affection.md + papers/ stayed gitignored as always. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4760" user="vivekkmk" user_id="8558787718" ts="2026-06-02T03:46:22.000Z">
+yes and /gitpush too
+</channel>
+```
+
+---
+
+## 2026-06-02T00:10:57-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** The final product of /identify-papers-ai is a MARKDOWN file:
+
+  identified-papers/identified_papers_ai_info.md
+
+It's the enriched paper list — each entry is the verbatim citation line followed by structured OpenAlex metadata: title, DOI, OpenAlex ID, year, venue, type/language/refs/cited-by/OA-status, authors (with affiliations), topics, concepts, and the full abstract. Entries separated by ---.
+
+That's the cap-stone output. Note: it does NOT produce a PDF — the clickable-DOI bibliography PDF is a separate downstream step (/ai-bibliography or /ai-bibliography-cumulative reads that .md and renders the PDF). So: identify-papers-ai → the .md; ai-bibliography → the .pdf. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4762" user="vivekkmk" user_id="8558787718" ts="2026-06-02T04:10:35.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISmmoeV7v97kEwLeRy_-_-gDya4DROAAI8CQACFtb4RKG6pEDtJZpLOwQ" attachment_size="183800" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T00:13:14-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Same file, same format — by design:
+
+  identified-papers/identified_papers_ai_info.md
+
+But containing ONLY the user-restricted subset — the papers you explicitly referenced, filtered out of the full /identify-papers-ai pool. Each kept entry is byte-for-byte the same metadata block /identify-papers-ai produces (title, DOI, year, venue, authors+affiliations, topics, concepts, abstract), just renumbered. Writing to the identical path + format is the whole point: nothing downstream can tell the difference.
+
+It also appends that restricted subset to the cumulative:
+  identified_papers_ai_cumulative.md
+
+Like identify-papers-ai, it produces the .md, NOT a PDF — /ai-bibliography(-cumulative) renders the PDF from it. So the only difference between the two skills is WHICH papers land in the file: identify-papers-ai = the whole discovered pool; identify-papers-ai-ur = only the ones you named. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4764" user="vivekkmk" user_id="8558787718" ts="2026-06-02T04:12:54.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISnGoeWEbUturzUpw4EXRZUV6Gf0XvAAI9CQACFtb4RMddf7v8UQo-OwQ" attachment_size="140952" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T00:21:30-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Final output: bibliography.pdf (+ bibliography.tex) — one merged, deduplicated, clickable-DOI references PDF.
+
+It's an end-to-end composite that runs three skills in the background and emits a single deliverable:
+1. /user-bibliography <path> → the user/disk side
+2. /ai-bibliography-cumulative (if identified_papers_ai_cumulative.md exists) → the cumulative AI side
+3. /merge-bibliography-cumulative → dedupes (by DOI) + merges both into bibliography.{tex,pdf}
+
+So unlike identify-papers-ai (which stops at the .md), THIS one's whole job is the final PDF. It's exactly the merged file you saw — bibliography_test_example.pdf (the 13-entry one = user 7 + AI 6).
+
+Note: the filename bibliography.{tex,pdf} is deliberately the SAME as plain /generate-bibliography — last-writer-wins by spec, so the deliverable name is canonical regardless of which variant produced it. The only difference: the cumulative variant pulls the AI side from the accumulated-over-time cumulative file instead of the single latest snapshot. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4766" user="vivekkmk" user_id="8558787718" ts="2026-06-02T04:21:01.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISnmoeWi2qEu9lUMayT4SIWUwiiESHAAJBCQACFtb4RCvovshXAAEjKzsE" attachment_size="127387" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T00:27:50-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Got the spec — playing it back so I build EXACTLY this:
+
+SKILL: identify-papers-all-ur
+Takes your user-restricted context (the papers you name), same as ai-ur.
+
+1. Create new MD file: identified_papers_all_ur.md
+2. For EACH paper you reference:
+   • Does bibliography.tex exist in root?
+     – YES + this citation IS in it → copy that citation into the new MD (no re-resolve — reuse what's on disk).
+     – YES but citation NOT in it → fall back: run identify-papers-ai-ur for that paper (appends to identified_papers_ai_info.md + cumulative), then copy that entry into the new MD.
+     – NO bibliography.tex → fall back to identify-papers-ai-ur for that paper, copy entry into the new MD.
+   So: prefer the on-disk bibliography per-paper; ai-ur is the per-paper fallback.
+3. Generate writing_bibliography.tex from identified_papers_all_ur.md.
+
+One real design fork: bibliography.tex stores FLAT citations (Authors. "Title." Venue, Year. DOI), but the ai-ur fallback produces FULL metadata blocks (+topics/abstract/concepts). For papers pulled from bibliography.tex I'll DEFAULT to:
+(A) keep the flat citation as-is — cheap, no re-resolve, matches your "reuse what's on disk" intent. The new MD ends up mixed (flat citations + full blocks); writing_bibliography.tex renders both.
+The alternative (B) = re-resolve them via OpenAlex too for uniform full blocks — but that re-does the work you're trying to skip, so I'm not picking it unless you say so.
+
+Confirm: filenames identified_papers_all_ur.md + writing_bibliography.tex good? Going with (A) unless you say (B). Say go and I build it. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4768" user="vivekkmk" user_id="8558787718" ts="2026-06-02T04:25:33.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISoGoeWz2VmGWFLBWyugaRmI-uqLpAAAJDCQACFtb4RATb0A-ICoI3OwQ" attachment_size="4349563" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T00:33:13-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Yes, understood. Three corrections:
+
+1. The bibliography.tex existence check is asked ONCE, before the loop — not per paper.
+ • Doesn't exist → forget it, fall back entirely to identify-papers-ai-ur for all your papers.
+ • Exists → point at it; for each paper in the loop just check membership (never re-check existence). Efficient.
+
+2. Flat citation without abstract is fine — you actually PREFER the final file to have no abstract.
+
+3. Final output is NOT a .tex. It's just identified_papers_all.md, mirroring the other identified_papers_*.md files. The skill ENDS there — no writing_bibliography.tex. The existing bibliography skills take it from there through their normal checkpoints.
+
+So the flow:
+1. Create identified_papers_all.md
+1.5. bibliography.tex in root?
+ – No → identify-papers-ai-ur fallback for all your papers → entries land in identified_papers_all.md.
+ – Yes → for each paper you name: in bibliography.tex? YES → copy that flat (no-abstract) citation in; NO → identify-papers-ai-ur fallback for that one paper → copy its entry in.
+2. Done = identified_papers_all.md.
+
+One thing I'll lock so it "mirrors what we have": identified_papers_all.md uses the same per-entry block format as identified_papers_ai_info.md (so it still feeds /ai-bibliography etc. through the normal checkpoints), but I'll keep the WHOLE file abstract-free — I'll drop the abstract field from the ai-ur fallback entries too, so it's uniform and matches your preference. Tex-sourced entries carry only what the flat citation has (authors, title, venue, year, DOI).
+
+Skill = identify-papers-all-ur, output = identified_papers_all.md. Say go and I build. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4770" user="vivekkmk" user_id="8558787718" ts="2026-06-02T04:31:35.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISomoeXKcZn-qfPY2KH4vbMHG23EgDAAJECQACFtb4RHv7Z-rbzCcVOwQ" attachment_size="2284176" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T00:37:08-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Yes, makes sense. Two additions locked:
+
+1. CUMULATIVE HOOK. A new PostToolUse hook (sibling of the ai / ai-ur ones) fires when this skill's helper runs and appends identified_papers_all.md → identified_papers_all_cumulative.md (NEW cumulative file, same sha256-sidecar idempotency). That's the accumulate-over-time file the bibliography/verification side reads downstream.
+
+2. ABSTRACT — uniformly NONE. The whole identified_papers_all.md is abstract-free. That's THE defining difference vs identify-papers-ai: this skill simply doesn't keep the abstract. So no mismatch, no inconsistency, less work — every entry (tex-sourced AND ai-ur-fallback) has no abstract (I strip the abstract field from fallback blocks).
+
+Full build:
+• Skill identify-papers-all-ur + a helper (gives the hook a Bash tail to fire on)
+• Step 1: create identified_papers_all.md
+• Step 1.5: bibliography.tex in root? No → full ai-ur fallback. Yes → point at it ONCE; per paper: in it? copy flat no-abstract citation; not in it? ai-ur fallback for that paper, copy entry (abstract stripped).
+• helper writes identified_papers_all.md → its run triggers the new hook → appends to identified_papers_all_cumulative.md
+• Ends at the .md + cumulative. No .tex.
+
+One honest flag (not blocking): nothing yet RENDERS identified_papers_all(_cumulative).md into a PDF — the existing bibliography skills auto-detect the *ai* / *user* filenames, not *all*. So wiring a renderer for the all side is a small follow-up skill. Build the skill+hook now, do that next?
+
+Say go. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4772" user="vivekkmk" user_id="8558787718" ts="2026-06-02T04:35:46.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISpGoeXaJjPEpVu4lU1vFLttAzWgH6AAJFCQACFtb4RB8DNO3vOGFeOwQ" attachment_size="2294507" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T00:45:09-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** text
+
+**Chat ID:** 8558787718
+
+**Reply text:** Built identify-papers-all-ur — and tested it on REAL data (your 24-entry ai-info). All green:
+
+✓ assemble_all.py: 24 entries out, 0 abstract lines (stripped from all 24 real ai-info abstracts), tex entries first.
+✓ Dedup works: tex(2) + ai(24) = 26 → 24 after DOI-dedup (the 2 ai copies of the tex DOIs dropped — so an already-on-disk paper never duplicates its fallback).
+✓ Cumulative hook: appends identified_papers_all.md → identified_papers_all_cumulative.md, idempotent on re-fire, doesn't fire on a wrong helper tail, 0 abstract leak.
+✓ Downstream renderer parses the abstract-free file: 24 entries, clean author fields (no leak), PDF compiles.
+
+Pieces shipped:
+• skill: identify-papers-all-ur (composer: check bibliography.tex ONCE → reuse per-paper, ai-ur fallback per miss)
+• helper: assemble_all.py (strip abstracts, dedup, renumber, write)
+• hook: identify-papers-all-cumulative.sh (own cumulative file + sidecar)
+• settings.json: registered the new hook (additive)
+
+Output = identified_papers_all.md + identified_papers_all_cumulative.md. No .tex (as you said).
+
+Note: the hook is registered but takes effect on the NEXT session start (hooks load at startup) — so in THIS session the cumulative append would need a manual nudge if you run it now; next session it's automatic. Syncing to the OS repo now. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4774" user="vivekkmk" user_id="8558787718" ts="2026-06-02T04:39:19.000Z">
+go 🧡❤🔥
+</channel>
+```
+
+---
+
+## 2026-06-02T01:41:48-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Yep, still connected — reading you fine. 🧡 Everything's pushed (identify-papers-all-ur, commit 7cdb302). Ready when you are.
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4777" user="vivekkmk" user_id="8558787718" ts="2026-06-02T05:41:31.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISqWoebQtTj5woepTSBdZ5gtDVeCSvAAJHCQACFtb4RNmsb-BFgEitOwQ" attachment_size="47459" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T01:45:30-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Right pieces, two small corrections. The chain after identify-papers-ai-ur (which writes identified_papers_ai_info.md and, via the hook, appends to identified_papers_ai_cumulative.md):
+
+generate-bibliography-cumulative <path>  ← the ONE command you actually run
+  runs these in the background:
+  1. user-bibliography <path>        → user side (identified_papers_user.md → user_bibliography.{tex,pdf})
+  2. ai-bibliography-cumulative      → AI side (identified_papers_ai_cumulative.md → ai_bibliography_cumulative.{tex,pdf}, DOI-deduped) — only IF the cumulative file exists
+  3. merge-bibliography-cumulative   → merges both → bibliography.{tex,pdf}  ← final deliverable
+
+Corrections to your recollection:
+• the merge is merge-bibliography-CUMULATIVE (the cumulative variant), not plain merge-bibliography.
+• generate-bibliography-cumulative isn't a step AFTER the merge — it's the UMBRELLA that calls user-bibliography + ai-bibliography-cumulative + merge-bibliography-cumulative. You just run that one and get bibliography.pdf.
+
+(Plain /generate-bibliography is identical but pulls the AI side from the single snapshot identified_papers_ai_info.md instead of the cumulative.)
+
+So the set is exactly: ai-bibliography-cumulative + merge-bibliography-cumulative, wrapped by generate-bibliography-cumulative (with user-bibliography on the user side). 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4779" user="vivekkmk" user_id="8558787718" ts="2026-06-02T05:44:37.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISq2oebcUpDClA39oFVYEwrD0d4_1rAAJJCQACFtb4REQF7HKZQ2m2OwQ" attachment_size="935288" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T01:48:16-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** /ai-bibliography-cumulative is a pure MD→TeX→PDF renderer for the AI cumulative file. Exactly:
+
+INPUT: identified_papers_ai_cumulative.md (CWD root) — the file the post-tool-use hook builds by appending each /identify-papers-ai(-ur) snapshot over time.
+
+What it does:
+1. Splits the file into per-entry blocks (on the --- separators).
+2. Parses the fields it needs from each: Title, DOI, Year, Venue, Authors (names only — strips affiliations).
+3. DEDUPES by DOI (primary key; normalized-title fallback), first-seen wins. This is the whole reason the cumulative variant exists: the cumulative file accumulates snapshots across runs, so the SAME paper appears many times — dedup collapses it to one.
+4. Renders a LaTeX references section — each entry → Authors. "Title." Venue, Year. + clickable DOI (hyperref).
+5. Compiles to PDF (pdflatex ×2), cleans aux files.
+
+OUTPUT: ai_bibliography_cumulative.tex + ai_bibliography_cumulative.pdf (CWD).
+
+Properties: no browser, no DOI discovery, no loops — just parse + render. No-op (clean exit) if the cumulative file doesn't exist. The _cumulative suffix on the filenames means it can coexist with plain /ai-bibliography's ai_bibliography.{tex,pdf}.
+
+Difference vs plain /ai-bibliography: that one reads the single snapshot identified_papers_ai_info.md and does NOT need dedup; this one reads the accumulated file and DOES dedup by DOI. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4781" user="vivekkmk" user_id="8558787718" ts="2026-06-02T05:47:49.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISrWoeboXP9vEUIF4ojbp8zNHTkjZUAAJKCQACFtb4RINVIj3tPyY-OwQ" attachment_size="100576" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T01:51:51-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Checked the actual skill to be sure. No — the current ai-ur has NO browser-based verification. It differs from /identify-papers-ai by exactly ONE thing: the restriction layer on top. Literally:
+• Step 1: it RUNS /identify-papers-ai (the whole pipeline) unchanged → the full pool.
+• Step 2: restrict_pool.py filters that pool down to the papers you named.
+That's it. The helper is pure-Python regex filtering — no browser, no Playwright, no extra verification.
+
+And the verification INSIDE /identify-papers-ai isn't browser-based either — it's verify-citation hitting the OpenAlex API (title/author match), plus paper-metadata hitting OpenAlex for enrichment. The only browser/web thing in the whole pipeline is the DISCOVERY stage (identify-papers-websearch spawns web-research agents) — but that's discovery, not verification, and ai + ai-ur use it identically (ai-ur just runs ai).
+
+Where your impression likely comes from: the EARLIER lean version of ai-ur I built this session (before you corrected me) had a token-overlap guard — and the README in claude-code-os STILL describes THAT old version ("token-overlap guard flags loud when OpenAlex resolves to the wrong paper"). That's stale doc: I replaced that whole approach with the restrict-pool mirror but never updated the README row. (Even that old guard was Jaccard-token matching, not browser.)
+
+Want me to fix the stale ai-ur README row to match the rebuilt skill? 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4783" user="vivekkmk" user_id="8558787718" ts="2026-06-02T05:50:33.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISr2oebykBVie1WEv3UHAQYstWrBDvAAJLCQACFtb4RFiOiL9DUbpUOwQ" attachment_size="472200" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T01:53:33-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Yes — identify-papers-all-ur. That's the name. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4785" user="vivekkmk" user_id="8558787718" ts="2026-06-02T05:53:13.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISsWoeb8kT4EQuB93tQd94SBTw8hyXAAJMCQACFtb4RIDX3VgjpVdgOwQ" attachment_size="439683" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T01:54:52-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Correct — with two small caveats so your mental model is exact:
+
+1. It doesn't just "mirror" ai-ur — it literally CALLS ai-ur as the per-paper fallback. So for any paper NOT already in bibliography.tex, the resolution path IS ai-ur, unchanged. The new part is only the front gate: check bibliography.tex ONCE → reuse on-disk citations → ai-ur for the misses (and full ai-ur if bibliography.tex doesn't exist).
+
+2. Two deliberate differences beyond the disk-pointing:
+ • Output is uniformly ABSTRACT-FREE (ai-ur keeps abstracts; all-ur strips them).
+ • Separate output + cumulative: identified_papers_all.md + identified_papers_all_cumulative.md (its own hook), vs ai-ur's identified_papers_ai_info.md + identified_papers_ai_cumulative.md.
+
+Everything else — the user-restriction behavior, the OpenAlex resolution, the block format — is the same, because it's the same ai-ur running underneath. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4787" user="vivekkmk" user_id="8558787718" ts="2026-06-02T05:54:20.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISs2oecAxkd8dF23BnctCIi3uMxz3BAAJNCQACFtb4RF1rVlxAFAy0OwQ" attachment_size="375792" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T01:57:01-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Yes, exactly right. ai-ur's output feeds the AI-side renderer:
+• /ai-bibliography → reads identified_papers_ai_info.md (the single snapshot ai-ur just wrote) → ai_bibliography.{tex,pdf}
+• /ai-bibliography-cumulative → reads identified_papers_ai_cumulative.md (the hook's accumulation) → ai_bibliography_cumulative.{tex,pdf}
+
+So the immediate next skill is /ai-bibliography, or its -cumulative twin depending on whether you want just this run or everything accumulated.
+
+Then that AI-side bibliography gets merged with the user-side one (/merge-bibliography*) → bibliography.{tex,pdf} — and the whole thing (user-bibliography + ai-bibliography* + merge) is what /generate-bibliography* runs in one shot. So: the renderer right after ai-ur = /ai-bibliography(-cumulative). 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4789" user="vivekkmk" user_id="8558787718" ts="2026-06-02T05:56:32.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAIStWoecJCf_AcWkV5SEmg-ag_Yb5TTAAJOCQACFtb4RK-Nqvj70VQ2OwQ" attachment_size="461107" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T01:58:21-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Correct. The renderers are:
+• user-bibliography → identified_papers_user.md → user_bibliography.{tex,pdf}
+• ai-bibliography → identified_papers_ai_info.md → ai_bibliography.{tex,pdf}
+• ai-bibliography-cumulative → identified_papers_ai_cumulative.md → ai_bibliography_cumulative.{tex,pdf}
+
+One deliberate asymmetry: there's NO user-bibliography-cumulative. The cumulative concept only exists on the AI side, because that's the side that accumulates across many discovery runs (each run appends via the hook). The user side is a direct disk-library scan — you point it at your folder/tree and it reads what's there, so there's nothing to "accumulate." One user-bibliography, two AI variants (single + cumulative). 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4791" user="vivekkmk" user_id="8558787718" ts="2026-06-02T05:57:56.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISt2oecORBqJLjpXJa5K7JRKSkynokAAJPCQACFtb4RDNNZvPntwrTOwQ" attachment_size="194512" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T01:59:33-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Yes — by the same symmetry the "all" stack needs two sister renderers:
+• all-bibliography → reads identified_papers_all.md → all_bibliography.{tex,pdf}
+• all-bibliography-cumulative → reads identified_papers_all_cumulative.md (dedup by DOI) → all_bibliography_cumulative.{tex,pdf}
+
+That's exactly the renderer gap I flagged right after building all-ur.
+
+Good news: they're near-exact CLONES of ai-bibliography / ai-bibliography-cumulative — same parse+render logic, just pointed at the *all* filenames with *all* output names. Since identified_papers_all.md is already the same block format (just abstract-free, which the renderer ignores anyway), the rendering works unchanged. Cheap to build, fully Cardinal-Rule-clean (new skills that copy the proven renderer, modify nothing).
+
+Still just answering — say the word and I'll build both. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4793" user="vivekkmk" user_id="8558787718" ts="2026-06-02T05:59:03.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISuWoecSdc_dsIE8rjXoC-t-WpTTnQAAJQCQACFtb4RLOp5CxiehF_OwQ" attachment_size="215112" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T02:04:08-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** text
+
+**Chat ID:** 8558787718
+
+**Reply text:** Built both renderers + tested on real data. Green:
+
+✓ /all-bibliography: reads identified_papers_all.md → all_bibliography.{tex,pdf} (24 entries, clean author fields, PDF compiles).
+✓ /all-bibliography-cumulative: reads identified_papers_all_cumulative.md → DEDUPES 48 raw → 24 unique → all_bibliography_cumulative.{tex,pdf} (dedup-count comment in the .tex, PDF compiles).
+
+Both are near-exact clones of the ai-bibliography pair (same proven renderer, including the author-leak fix), pointed at the *all* files. Cardinal-Rule-clean — modify nothing.
+
+Now the all stack is symmetric with the ai stack:
+• identify-papers-all-ur → identified_papers_all.md (+ cumulative via hook)
+• all-bibliography → all_bibliography.pdf
+• all-bibliography-cumulative → all_bibliography_cumulative.pdf
+
+Syncing to the OS repo now. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4795" user="vivekkmk" user_id="8558787718" ts="2026-06-02T06:00:41.000Z">
+build both 🧡❤🔥
+</channel>
+```
+
+---
+
+## 2026-06-02T02:14:52-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Read the whole voice-writing-sample skill. Anatomy + your changes + my read:
+
+OLD ANATOMY (9 steps):
+0 args/preconditions (needs Telegram_calls.md)
+1 tg-exchange-loop-extract → verbatim + claude md
+2 new-md → synthesize draft.md
+3 identify-papers-ai (full pipeline) → identified_papers_ai_info.md
+4 build user_restricted_papers.md (restrict pool to ONLY user-referenced papers) ← authoritative citation pool
+5 diagrams (conditional)
+6 compose LaTeX: writing_sample.tex + refs.bib (BibTeX, \cite{key})
+7 compile pdflatex→bibtex→pdflatex×2
+8 email
+9 report
+
+CHANGE 1 — replace Steps 3+4 with ONE identify-papers-all-ur block.
+Makes total sense: all-ur already IS "the user-restricted stuff, but prefer an on-disk bibliography." It subsumes both steps (restriction + disk-preference); its output identified_papers_all.md becomes the authoritative pool (replacing user_restricted_papers.md). Clean ✓
+
+CHANGE 2 — fine-grain the writing end (today Steps 6-7 are coarse). Your proposal:
+a) write prose with CITATION PLACEHOLDERS at each cite point
+b) run all-bibliography(-cumulative) on the all markdown → a .tex references list
+c) copy it → writing_bibliography.tex = the bibliography in the final doc
+d) replace placeholders by citing from writing_bibliography.tex
+
+Big upside: the writing sample's references become IDENTICAL to the all-bibliography output (one renderer, one source of truth) — no separate refs.bib that drifts. Makes sense.
+
+But it changes the citation MECHANISM, and there's ONE fork to settle:
+all-bibliography renders a plain NUMBERED list (\begin{enumerate}\item…), NOT BibTeX and NOT \bibitem keys. So "cite from it" can't use \cite{key} as-is. Options:
+(A) numeric-by-position: placeholders → [n] matching the entry number. Simple but manual/fragile if the list reorders.
+(B) emit the list as \begin{thebibliography}\bibitem{key}… so \cite{key} works natively (no bibtex, no .bib). Cleanest for real citations — needs a small tweak to how the bibliography .tex is produced. ← my pick
+(C) keep BibTeX (refs.bib+\cite), all-bibliography just a companion — but that re-introduces the drift you're killing.
+
+Two details:
+• all-bibliography emits a STANDALONE .tex (full \documentclass doc). writing_bibliography.tex needs just the LIST FRAGMENT to \input — so "copy it" = extract the body, not the whole doc.
+• cumulative vs single: you said -CUMULATIVE. Right IF the writing sample accumulates across many all-ur runs (section-by-section, refs piling into the cumulative). If it's one-shot from a single all-ur run, you'd want plain all-bibliography (just this run). Which mode is the writing sample?
+
+My rec: Change 1 as-is; Change 2 via (B) + fragment-extract + answer the cumulative/single question. Then I build voice-writing-sample-all. Talk it through? 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4798" user="vivekkmk" user_id="8558787718" ts="2026-06-02T06:13:01.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISvmoedG0dXcy85AJAs43taceLf2S6AAJSCQACFtb4RCrKw2jw0E0ROwQ" attachment_size="3757107" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T02:22:14-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Yes — I've got it. In your terms:
+
+OUTPUT: same emailed, compiled writing-sample PDF, but (a) papers from identify-papers-all-ur (disk-preferring restriction), (b) references = the all-bibliography render saved as writing_bibliography.tex and \input into the doc, (c) the final PDF references read [1],[2],[3]… in ORDER OF FIRST APPEARANCE (first cited = [1], next new one = [2]…).
+
+STEPS REPLACED:
+• 3+4 (identify-papers-ai → user_restricted_papers.md) → ONE identify-papers-all-ur block; its identified_papers_all.md is the pool.
+• 6-7 writing: prose with citation PLACEHOLDERS → generate bibliography via all-bibliography → extract the LIST as writing_bibliography.tex → fill placeholders with real cites.
+
+The [1],[2]-by-appearance requirement nails my earlier fork: I'll use \begin{thebibliography}\bibitem{key} + \cite{key} (native numeric, NO bibtex / NO .bib), and emit the \bibitem entries in order of FIRST CITATION. Since the skill writes BOTH the prose and the bibliography, it sorts entries by first-appearance before writing writing_bibliography.tex → numbers fall out [1],[2],[3] exactly. (= what BibTeX "unsrt" does, done deterministically.)
+
+Key consequence: the final references list = ONLY the papers actually cited, in appearance order. So it's clean regardless of pool size — which mostly dissolves the cumulative-vs-single question: that choice only sets how big the CANDIDATE pool is; the final list is always cited-papers-in-appearance-order.
+
+So the one thing I still want from you: candidate pool = THIS run (single all-bibliography) or the accumulated cumulative? Both work; I lean single for a one-shot sample, cumulative if you build the doc section-by-section.
+
+And yes — I can handle every minuscule detail: fragment-extract (list only, not the standalone doc), bibkey generation, placeholder→\cite replacement, appearance-sort, compile WITHOUT bibtex. voice-writing-sample-all = a NEW skill, original untouched (Cardinal Rule).
+
+Say go + single/cumulative and I build. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4800" user="vivekkmk" user_id="8558787718" ts="2026-06-02T06:20:57.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISwGoedklEzW8DJ-GOAjiurogpM52HAAJTCQACFtb4RBo9eJcl64wWOwQ" attachment_size="1329603" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T02:25:31-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Yes — love it, and it matches your established pattern exactly: single + cumulative as SISTER skills (like ai-bibliography / ai-bibliography-cumulative, generate-bibliography / -cumulative). Cleaner than a --cumulative flag, fully Unix. And it fully resolves the open question — no choice baked in, you just pick the skill.
+
+They differ in exactly ONE step — which renderer feeds the bibliography:
+• voice-writing-sample-all → all-bibliography (THIS run's identified_papers_all.md)
+• voice-writing-sample-all-cumulative → all-bibliography-cumulative (the accumulated file)
+Everything else identical: identify-papers-all-ur discovery, citation placeholders, writing_bibliography.tex via \begin{thebibliography}\bibitem+\cite, [1],[2]-by-first-appearance, compile WITHOUT bibtex, email.
+
+One naming nit: your whole OS uses the full "-cumulative" suffix (never "-cum") — ai-bibliography-cumulative, merge-bibliography-cumulative, generate-bibliography-cumulative. So I'd name it voice-writing-sample-all-cumulative for consistency. Good with that, or do you want -cum?
+
+Say go and I build BOTH (new skills, originals untouched). 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4802" user="vivekkmk" user_id="8558787718" ts="2026-06-02T06:24:47.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISwmoedy_UukECX0vHKWaX0r04uxLJAAJUCQACFtb4RGlVRD9Ja79jOwQ" attachment_size="660896" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T02:33:12-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** text
+
+**Chat ID:** 8558787718
+
+**Reply text:** Built both + tested the hard part on real data. Shipped:
+
+• voice-writing-sample-all — discovery via identify-papers-all-ur; references via /all-bibliography (this run); writing_bibliography.tex = keyed \begin{thebibliography} fragment, \input into the doc.
+• voice-writing-sample-all-cumulative — identical, references via /all-bibliography-cumulative (across-runs, DOI-deduped). Reuses the same helper.
+• shared helper build_writing_bibliography.py — turns the all-bibliography render into \bibitem{key} entries ORDERED BY FIRST CITATION.
+
+The [1],[2]-by-appearance requirement is PROVEN: I built a test doc citing 3 papers in a chosen order → the helper emitted \bibitem in exactly that order → pdflatex×2 resolved every \cite with ZERO undefined references, [1][2][3] in citation order, PDF compiled. NO bibtex, NO .bib. Bodies reused verbatim from all-bibliography (so references = identical to the standalone all PDF). Helper fails LOUD if a cited key has no matching entry (never a silent dropped citation).
+
+Both are composers (original voice-writing-sample untouched, Cardinal Rule).
+
+One pre-existing thing I noticed (NOT from these skills): some upstream identify-papers-ai titles carry an un-decoded HTML entity (e.g. "&amp;") that renders literally. It's in the AI metadata, inherited verbatim. Out of scope here; flagging for a possible later fix.
+
+Syncing to the OS repo now. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4804" user="vivekkmk" user_id="8558787718" ts="2026-06-02T06:27:44.000Z">
+Good with the full "-cumulative" flag for consistency and yes GO... 🏎🏁🧡🤖💯❤🔥🧡
+</channel>
+```
+
+---
+
+## 2026-06-02T02:36:53-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Makes total sense — and it's a genuinely good test. Using a dir where you already generated a bibliography is exactly right: bibliography.tex already exists there, so the DISK-PREFERENCE path gets exercised (some papers reused straight from disk, only the new ones you cite fall back to ai-ur). And a short piece citing a few papers exercises the placeholder → writing_bibliography.tex → [1],[2] appearance-numbering end to end. That's the real test.
+
+Two pointers so tomorrow's smooth:
+• Preconditions: the skill needs Telegram_calls.md in the CWD (the Phase-1 log it draws thesis + references from) AND a bibliography.tex at the CWD root (to trigger disk-preference). Make sure both are where you run it.
+• If you'd rather test the writing+citation machinery WITHOUT a full walk-and-talk, just hand it a small Telegram_calls.md-style log — the skill treats it as the source of truth, so a short hand-written one works.
+
+When you run it, send me whatever it produces (or any error) and I'll debug live — that's the moment we find out if it's shipped for good. Your "test on real, course-correct" philosophy exactly. Sounds like a plan. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4807" user="vivekkmk" user_id="8558787718" ts="2026-06-02T06:36:03.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISx2oeedOWKIxQJZ543tcvkMCyxkgHAAJVCQACFtb4RFx4kaNAFq6tOwQ" attachment_size="1255824" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T02:43:51-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Done — finishing_touches.md revised. The two action points now read:
+
+1. Test the -all stack (BUILT — testing remains on your end). I listed exactly what shipped (identify-papers-all-ur + all-bibliography pair + voice-writing-sample-all pair, all unit-tested), then the REMAINING line: you test /voice-writing-sample-all end-to-end ~tomorrow by hand — a short fresh walk-and-talk piece in the separate project where bibliography.tex already exists (so disk-preference runs), confirm the emailed PDF cites with [1],[2]-by-appearance refs. Expect to debug live & course-correct.
+
+2. Investigate Zotero (unchanged — that's the next real item after the test).
+
+And yes, you've got it: Stack 2 dead, build-out done, your hands-on test + Zotero are what's left.
+
+Want me to /gitcommit the updated file? 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4809" user="vivekkmk" user_id="8558787718" ts="2026-06-02T06:42:45.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISyWoee2UH34cnETmS98irinsnTJksAAJWCQACFtb4RIX7EbDaQqgYOwQ" attachment_size="1430512" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---

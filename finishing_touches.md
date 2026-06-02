@@ -1,33 +1,37 @@
 # Finishing touches — next steps
 
 Two remaining items after the AI stack (Stack 1) and user-curated stack (Stack 3)
-shipped. (The scale test is already running, and Stack 2 is decided — eliminated,
-nothing to build; its reasoning lives in `stack2_elimination_reasoning.md`.)
+shipped, and after the `-all` stack was built on 2026-06-02. (Stack 2 is decided —
+eliminated, nothing to build; its reasoning lives in `stack2_elimination_reasoning.md`.)
 
 ---
 
-## 1. Ship the routing layer + 2nd-generation voice-writing-sample
+## 1. Test the `-all` stack (BUILT — testing remains, on Vivek's end)
 
-Two NEW skills (Cardinal Rule: build new, don't modify). Both are thin wrappers
-that COMPOSE existing skills — no new heavy machinery.
+The disk-preferring, user-restricted `-all` stack is BUILT and unit-tested on real
+data (Cardinal-Rule-clean — composes existing skills, modifies nothing). What was
+shipped (2026-06-02):
 
-**`/identify-papers-all`** — an intelligent wrapper over `/identify-papers-ai`
-(and its restricted sibling) with a **disk-preference**:
+- **`/identify-papers-all-ur`** → `identified_papers_all.md` (+ `identified_papers_all_cumulative.md`
+  via a PostToolUse hook). Checks `bibliography.tex` in the CWD root ONCE: reuses each
+  user-referenced paper already cited there (no re-resolve), falls back to
+  `/identify-papers-ai-ur` for the rest (full fallback if no `bibliography.tex`).
+  Output is abstract-free.
+- **`/all-bibliography`** + **`/all-bibliography-cumulative`** → render the `-all`
+  list(s) to `all_bibliography(.tex/_cumulative.tex)+pdf` (clones of the ai-bibliography
+  pair; cumulative dedupes by DOI).
+- **`/voice-writing-sample-all`** + **`/voice-writing-sample-all-cumulative`** →
+  `-all` sisters of `/voice-writing-sample`. Discovery via `/identify-papers-all-ur`;
+  references rendered by `/all-bibliography(-cumulative)` and embedded as a keyed
+  `\begin{thebibliography}` fragment (`writing_bibliography.tex`) so the compiled PDF
+  numbers references `[1],[2],...` in ORDER OF FIRST CITATION (native `\cite`, NO bibtex).
 
-- First check whether a faithful, tested bibliography already exists on disk for
-  the papers in scope.
-- The "is it faithful?" gate must be a REAL check, **not** "a file exists" (a
-  stale/partial bibliography is a footgun). **Reuse `/cross-check-papers-user`** —
-  it already reconciles the on-disk PDF set against a bibliography. If cross-check
-  says the on-disk bibliography faithfully represents the papers → pull straight
-  from it (cheap, no re-resolve).
-- Else fall back to `/identify-papers-ai-ur` (run the real pipeline + the
-  user-restriction layer).
-
-**2nd-gen `voice-writing-sample`** — same composer as today, but its
-paper-discovery step calls `/identify-papers-all` instead of `/identify-papers-ai`
-directly. So when a faithful bibliography already exists on disk, the writing flow
-reuses it instead of rediscovering from scratch.
+**REMAINING (Vivek, ~2026-06-03):** test `/voice-writing-sample-all` end-to-end by
+hand — write a short fresh piece (walk-and-talk style) in the separate project where a
+bibliography has already been generated (so `bibliography.tex` exists at the CWD root and
+the disk-preference path actually runs), then confirm the emailed PDF cites correctly with
+`[1],[2]`-by-appearance references. Everything is unit-tested; this is the real-world,
+end-to-end validation. Expect to debug live and course-correct.
 
 ## 2. Investigate Zotero
 
