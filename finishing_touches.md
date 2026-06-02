@@ -1,8 +1,9 @@
 # Finishing touches — next steps
 
-Two remaining items after the AI stack (Stack 1) and user-curated stack (Stack 3)
-shipped, and after the `-all` stack was built on 2026-06-02. (Stack 2 is decided —
-eliminated, nothing to build; its reasoning lives in `stack2_elimination_reasoning.md`.)
+Remaining items after the AI stack (Stack 1) and user-curated stack (Stack 3) shipped,
+and after the `-all` stack was built on 2026-06-02. (Stack 2 is eliminated — see
+`stack2_elimination_reasoning.md`. The Zotero path was investigated and CLOSED on
+2026-06-02 — not pursued; reasoning + verdict in `questions_zotero.md`.)
 
 ---
 
@@ -33,22 +34,15 @@ the disk-preference path actually runs), then confirm the emailed PDF cites corr
 `[1],[2]`-by-appearance references. Everything is unit-tested; this is the real-world,
 end-to-end validation. Expect to debug live and course-correct.
 
-## 2. Investigate Zotero
+## 2. Project website + interactive architecture diagrams (capstone)
 
-Compare this system against Zotero (a reference manager) before deciding whether
-any of it should be offloaded.
+After the architecture is frozen (i.e. after the `/voice-writing-sample-all` test
+above), build the project website: an interactive diagram of the skill architecture
+(dashboard → plumbing, color-coded by stack, with the substrate strata visible) plus an
+insight / reflection section. The act of diagramming doubles as consolidation — a
+reachability pass from the 4 load-bearing commands sorts every skill into live plumbing
+vs. fossils. Full plan in `documentation_ideas.md`. The OS already has
+`project-showcase-website` / `makewebpage` skills to make it efficient.
 
-- Zotero overlaps on the BACK half: store PDFs + metadata, dedup/merge,
-  identifier → metadata (paste DOI / arXiv / PMID), and citation rendering in
-  thousands of CSL styles (genuinely better than our LaTeX builder at styling).
-- Zotero does NOT do the FRONT half: discovery from a topic / vague description,
-  hallucination-verification against OpenAlex, vague natural-language reference
-  resolution ("the Horstmeyer microscope paper"), the download cascade
-  (paper-download-hack), or agent / voice-driven orchestration composable into
-  other skills.
-- Verdict so far (base knowledge only): **complementary, not a replacement.**
-  Possible hybrid worth probing — our pipeline does discover → verify → restrict,
-  then export to Zotero / BibTeX (via `pyzotero`) for library management +
-  citation styling. The investigation: does Zotero's API / translators cover
-  enough of the back half to be worth the external dependency, given the whole
-  system is otherwise self-contained and voice-driven?
+*(The Zotero investigation that previously sat here was completed and CLOSED — not
+pursued. See `questions_zotero.md` for the verdict.)*
