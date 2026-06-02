@@ -3906,3 +3906,119 @@ So: I'd close the Zotero path. Want me to record the verdict at the bottom of qu
 ```
 
 ---
+
+## 2026-06-02T15:38:22-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Done — verdict recorded in questions_zotero.md, Zotero removed from finishing_touches, committed + pushed (a3b14f8).
+
+📋 WHAT'S LEFT ON THE AGENDA (from finishing_touches.md + the other files):
+
+ACTIVE —
+1. Your hands-on /voice-writing-sample-all test. The last unvalidated piece, and yours to run solo (separate session, since Telegram binds to one). Everything's unit-tested; this is the real end-to-end run. Send me the output/errors after.
+2. Project website + interactive architecture diagrams (the capstone). Sequenced AFTER the voice test, because the diagram should document a frozen architecture. Full plan in documentation_ideas.md; the OS already has project-showcase-website / makewebpage to make it efficient.
+
+MINOR / OPTIONAL (flagged, low-priority) —
+• Fix the stale identify-papers-ai-ur row in the claude-code-os README (still describes the old lean version).
+• Decide whether to fix the "&amp;" HTML-entity decode in upstream identify-papers-ai metadata (renders literally in some titles).
+
+CLOSED THIS SESSION —
+✓ Stack 2 — eliminated
+✓ Zotero — investigated + closed (not pursued)
+✓ The -all stack — built + unit-tested (all-ur, all-bibliography ×2, voice-writing-sample-all ×2, hook, helper)
+✓ The 86/87 real-world scale test — passed
+
+So really: one thing on YOUR plate (the voice test), one capstone after it (the website), and two tiny optional cleanups. The system itself is done and proven. 🧡🤖
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4862" user="vivekkmk" user_id="8558787718" ts="2026-06-02T19:36:46.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAIS_mofMM6-Du9lPXx84ti_vY41hUniAAJ6BwACFtYAAUVWSuSLY6JI4DsE" attachment_size="473467" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T15:41:57-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Correct — that's the single real next step: go to a fresh session and run /voice-writing-sample-all. Everything else is done or deferred.
+
+And skipping the minor tweaks is the RIGHT call, not laziness — it's the Cardinal Rule in spirit: don't risk breaking something that works (86/87, two passing tests) for a cosmetic doc fix. A lagging README is harmless; a regression from a "quick tweak" is not. Documentation can trail a working system — that's normal and fine. You're explicitly refusing to let a minor thing become a major bottleneck. Exactly right.
+
+So: website is down the line (only after your test proves the architecture), minor cleanups parked, and your one move now is the voice test in a separate session. Run it when you're ready, send me whatever comes out — PDF or error — and I'll debug live. 🧡🤖
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4864" user="vivekkmk" user_id="8558787718" ts="2026-06-02T19:41:21.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAITAAFqHzHguxkMzQWZ3D7usuNk6EWvPgACewcAAhbWAAFFLaVyU0Vn2Iw7BA" attachment_size="905624" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T19:42:40-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Yep, back on Telegram and reading you. 🧡🤖 Everything from earlier is committed + pushed (latest a3b14f8 — Zotero closed, finishing_touches refocused). Did you get to run the /voice-writing-sample-all test?
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4913" user="vivekkmk" user_id="8558787718" ts="2026-06-02T23:42:09.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAITMWofalEuDkLH93S7M3k8DFewzEaGAAKjBwACFtYAAUVBVhNhMHOJfzsE" attachment_size="32627" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T19:46:47-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Looked at all 4 pages — it WORKED. Genuine end-to-end success. 🎉
+
+What it is: a clean academic note, "Superposition Without Redundancy: How a Summed-Force Experiment Reshapes the Loss Landscape in Mechanical Inverse Problems" — your EXACT inverse-problem insight from yesterday, rendered as a real paper.
+
+What I checked, the parts that matter:
+
+✅ [1],[2]-by-appearance WORKS. In the prose: [1] visual-vibration → [2] surface-wave-elastography → [3] mechanics-based tomography → [4] neural inverse operators → [5] PINNs → [6] thermal tomography → [7] Nakamura–Uhlmann uniqueness. The References list is [1]–[7] in that exact order. First-cited = [1]. Nailed it.
+
+✅ The proof is mathematically correct. Derives L_new = 2·L_old + 2⟨ε1,ε2⟩, identifies the cross term as the new content, and nails the subtlety — it reshapes the landscape/conditioning but does NOT move the minimizer (ε_j=0 at K_est=K_true). Your argument, rigorously typeset.
+
+✅ Disk-aware citation resolution SHONE — exactly where we hoped. The provenance note records that voice transcription garbled author names and the skill FIXED them via OpenAlex: "K.T. Bauman → Katherine L. Bouman", "Nakamura and Ullman → Nakamura and Uhlmann", "Alan Blanchett → Christine Allen-Blanchette", "deviolate → Dirichlet". That's the tail/ambiguity resolution Zotero could never do.
+
+✅ Disk reuse happened — provenance says it "reused those already on disk" (the all-ur disk-preference path ran).
+
+✅ Honest provenance note (your argument + citations; my transcription/verification/citation/typesetting) + the Claude-first authorship line. References clean — no affiliation leak, no &amp; artifact here.
+
+So the LAST unvalidated piece is now validated on real input: voice → disk-aware discovery → resolution → appearance-numbered citations → compiled PDF → emailed. The whole all-stack works end to end.
+
+One honest note: the most-recent PDF email I opened was to Madhavan Raghavan, not Suresh — and there's an earlier one to vivekjobapp123 (the skill's default). Couldn't find a recent send to "Suresh." Same writing_sample.pdf regardless, but flagging in case you meant a different recipient. How did it feel on your end? 🧡🤖
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4915" user="vivekkmk" user_id="8558787718" ts="2026-06-02T23:43:28.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAITM2ofaqA_ON1_e1_uYWhYbtBB2kxOAAKkBwACFtYAAUXwhxnCUvw0azsE" attachment_size="552571" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
