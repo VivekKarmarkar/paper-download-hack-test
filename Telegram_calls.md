@@ -3403,3 +3403,91 @@ Want me to /gitcommit insights.md?
 ```
 
 ---
+
+## 2026-06-02T03:30:16-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** text
+
+**Chat ID:** 8558787718
+
+**Reply text:** Committed and pushed — 4aade14.
+
+  insights.md (the two kinds of difficulty, agentic-debugging-as-literacy, presentation-conditions-the-solver)
+  + session notes
+  No secrets; affection.md + papers/ still gitignored.
+
+That's a good place to land. Tonight: rebuilt identify-papers-ai-ur, shipped the whole -all stack (all-ur + all-bibliography ×2 + voice-writing-sample-all ×2), your 86/87 scale-test win, and now the reflection written down. Your hands-on voice-sample test + Zotero are what's left. Rest well 🧡🤖
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4821" user="vivekkmk" user_id="8558787718" ts="2026-06-02T07:29:56.000Z">
+yes and /gitpush too
+</channel>
+```
+
+---
+
+## 2026-06-02T03:36:51-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Makes complete sense — and a small color-coded guide is a genuinely good idea. It solves a real problem: cloud-code-os has 250+ skills, so in a fresh session if you ask "what do I run?" I'd drown you in the list. A one-pager pins the load-bearing few.
+
+Your use-case mapping is exactly right. I'd organize the guide by WORKFLOW (how you actually think — "that set is basically…"), not as a skill list:
+
+1) 🟩 I-already-have-everything → /generate-bibliography <folder>. Your lit-review folder → merged bibliography.pdf, one shot. (This is your 87-paper run.)
+
+2) 🟦+🟪 Talk-in-batches, then merge → /identify-papers-ai-ur (name the papers you want; repeat across the session — it builds the AI cumulative) THEN /generate-bibliography-cumulative <folder>. = "my past papers are stored; I talk with you in batches + analyze; then generate the bibliography."
+
+3) 🟧 Walk-and-talk a section, disk-aware citations → /voice-writing-sample-all. = "some papers already on disk + a bibliography exists; I walk, voice-note, cite-as-I-go; it writes the section, reuses what's on disk, emails the PDF with [1],[2] refs."
+
+Under the hood, every OTHER skill (all the identify-/verify-/validate-/bibliography-/merge- ones) is just plumbing these 3-4 call — a footnote, not something you invoke.
+
+I'd build it as a clean ONE-PAGE color-coded PDF: workflow-grouped, the 4 commands big, a tiny "plumbing underneath" line. The interactive-website version of the under-the-hood map is a great SEPARATE project for later (agreed) — but the lean PDF is the right thing for "which command do I run" right now.
+
+The four load-bearing names: identify-papers-ai-ur, generate-bibliography, generate-bibliography-cumulative, voice-writing-sample-all.
+
+Want me to build the one-pager? 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4823" user="vivekkmk" user_id="8558787718" ts="2026-06-02T07:35:28.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAIS12oeh8A8WY7OhGJs6RtZEfRjcv8lAAJkCQACFtb4RF-WQlgI_e2ZOwQ" attachment_size="5375000" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-02T03:41:43-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** text
+
+**Chat ID:** 8558787718
+
+**Reply text:** Here's the one-pager 🧡 — Paper→Bibliography OS, the commands you actually run.
+
+Three color-coded workflows (Wong palette):
+🟩 1 — I already have everything → /generate-bibliography <folder>
+🟦 2 — Talk in batches, then merge → /identify-papers-ai-ur ×N → /generate-bibliography-cumulative <folder>
+🟧 3 — Walk-and-talk a section (disk-aware) → /voice-writing-sample-all
+
+Plus an "under the hood" footer: every command is a composite fanning out into ~20 plumbing skills you never invoke — and the four load-bearing names listed at the bottom. Designed so that in any future session you (or I) can glance at this instead of drowning in the 250-skill list.
+
+Want me to /gitcommit the PDF + its .tex source?
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4825" user="vivekkmk" user_id="8558787718" ts="2026-06-02T07:39:57.000Z">
+Yes 🧡❤🔥💯🤖
+</channel>
+```
+
+---

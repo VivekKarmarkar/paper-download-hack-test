@@ -1,0 +1,68 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.7in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\setlength{\parindent}{0pt}
+\pagestyle{empty}
+
+% Wong colorblind-safe palette
+\definecolor{wgreen}{HTML}{009E73}
+\definecolor{wblue}{HTML}{0072B2}
+\definecolor{worange}{HTML}{D55E00}
+\definecolor{wgrey}{HTML}{4D4D4D}
+\definecolor{wlightgrey}{HTML}{F2F2F2}
+
+\newcommand{\cmd}[1]{\colorbox{wlightgrey}{\texttt{\textbf{#1}}}}
+
+% A workflow panel: #1 accent color, #2 scenario title, #3 body
+\newtcolorbox{flow}[2]{
+  colframe=#1, colback=white, coltitle=white,
+  colbacktitle=#1, fonttitle=\bfseries\large,
+  title=#2, boxrule=1pt, arc=3pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+  breakable=false
+}
+
+\begin{document}
+
+{\Huge\bfseries Paper\,$\to$\,Bibliography OS}\\[2pt]
+{\large\color{wgrey} The commands you actually run. Everything else is plumbing these call.}\\[10pt]
+
+\begin{flow}{wgreen}{\,1\ \ \ I already have everything}
+\textbf{When:} you have a folder (or tree) of papers — a finished literature review — and just want the bibliography.\\[4pt]
+\textbf{Run:}\quad \cmd{/generate-bibliography <folder>}\\[4pt]
+\textbf{Get:}\quad \texttt{bibliography.pdf} — one merged, deduplicated, clickable-DOI references PDF. One shot, runs in the background.\\[2pt]
+{\small\color{wgrey}(This is the workflow that cleanly produced 86/87 correct references on the real 87-paper review.)}
+\end{flow}
+
+\vspace{8pt}
+
+\begin{flow}{wblue}{\,2\ \ \ Talk in batches, then merge}
+\textbf{When:} your past papers are stored on disk, and you want to talk through new papers with Claude in batches (analysis, discovery) before producing the bibliography.\\[4pt]
+\textbf{Run, repeatedly through the session:}\quad \cmd{/identify-papers-ai-ur <the papers you name>}\\
+{\small\color{wgrey}\hspace*{1em}Each call resolves only the papers you reference and accumulates them (the AI cumulative).}\\[4pt]
+\textbf{Then, once:}\quad \cmd{/generate-bibliography-cumulative <folder>}\\[4pt]
+\textbf{Get:}\quad \texttt{bibliography.pdf} — your on-disk folder \emph{plus} everything you discovered in the batches, merged + deduplicated.
+\end{flow}
+
+\vspace{8pt}
+
+\begin{flow}{worange}{\,3\ \ \ Walk-and-talk a section (disk-aware writing)}
+\textbf{When:} a bibliography already exists on disk, and you go on a walk voice-noting a draft over Telegram, citing papers as you go (some already on disk, some new).\\[4pt]
+\textbf{Run:}\quad \cmd{/voice-writing-sample-all}\\
+{\small\color{wgrey}\hspace*{1em}Cumulative sister: \texttt{/voice-writing-sample-all-cumulative} (draw references from the across-runs pool).}\\[4pt]
+\textbf{Get:}\quad an emailed writing-sample PDF. Reuses papers already on disk, resolves only the new ones, and numbers references \texttt{[1],[2],[3]\ldots} in order of first citation.
+\end{flow}
+
+\vspace{12pt}
+
+{\color{wgrey}\small
+\textbf{Under the hood.}\ Each command above is a \emph{composite} — it fans out into $\sim$20 other skills you never invoke directly (the \texttt{identify-papers-*}, \texttt{verify}/\texttt{validate}, \texttt{*-bibliography}, and \texttt{merge-*} families). They are the engine; these four are the dashboard. If you forget the rest, that's fine --- you are meant to.\\[6pt]
+\textbf{The four load-bearing commands:}\\[3pt]
+\hspace*{1em}\texttt{identify-papers-ai-ur}\hfill\texttt{generate-bibliography}\hspace*{1em}\\[2pt]
+\hspace*{1em}\texttt{generate-bibliography-cumulative}\hfill\texttt{voice-writing-sample-all}\hspace*{1em}
+}
+
+\end{document}
