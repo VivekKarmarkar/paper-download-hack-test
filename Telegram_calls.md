@@ -2409,3 +2409,148 @@ Rebuilding it now to mirror voice-writing-sample precisely: Step 1 RUN /identify
 ```
 
 ---
+
+## 2026-06-01T22:43:15-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Yep — back on Telegram and reading you loud and clear. 🧡 Everything from earlier is committed and pushed: the identify-papers-ai-ur rebuild (6e83439) and the project notes (d3606d5). What's next?
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4740" user="vivekkmk" user_id="8558787718" ts="2026-06-02T02:42:51.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAIShGoeQysB986IFPJaBV1Lggv0wX8gAAIeCQACFtb4RMftnKYFoAABZjsE" attachment_size="40867" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-01T22:52:59-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Three good questions — my honest takes:
+
+Q1 (third test?): Yes, do ONE more — but don't just make it "bigger," make it ADVERSARIAL. Your two clean 100% runs prove it works on well-separated references. What they DIDN'T probe is the failure mode that actually scales: ambiguous matching. Build a test where the pool has two papers by the same author, or two near-identical titles, and reference them vaguely. That's the one place the restriction layer could mis-match at scale. If it survives that → stop testing. n=2 perfect + 1 targeted stress test is the right stopping point. And your economics are correct: this is a human-in-the-loop DRAFT generator, not an irreversible system. 80–90% is genuinely usable — the cost of a residual bug is one conversational iteration, not a disaster. Don't over-test a thing the human reviews anyway.
+
+Q2 (identify-papers-all router): Good idea, and it fits your Unix/Cardinal-rule style — thin wrapper, build new. ONE critical caveat: the whole thing hinges on the predicate "is the on-disk bibliography a FAITHFUL, tested representation of the papers?" If that gate is just "a file exists," it's a footgun (stale/partial bibs). Make it a REAL check — and you already built the skill for it: cross-check-papers-user reconciles disk-vs-bibliography. So: identify-papers-all = run cross-check (does every PDF have a faithful entry?) → if faithful, pull from disk; else fall back to identify-papers-ai-ur. That COMPOSES what you have instead of duplicating. Then next-gen voice-writing-sample just calls the router. Clean.
+
+Q3 (Zotero, base knowledge only): It does the BACK half of your stack well, and the FRONT half not at all.
+• Strong at: storing PDFs+metadata, dedup/merge, metadata-from-identifier (paste DOI/arXiv/PMID), and especially citation rendering in thousands of CSL styles — honestly better than our LaTeX builder for that.
+• CANNOT do: discovery from a topic/vague description (it captures what you point it at, it doesn't FIND papers), hallucination-verification against OpenAlex (it trusts the source because you grabbed it from a real page), vague-NL-reference → canonical resolution ("the Horstmeyer microscope paper"), the download cascade (Sci-Hub fallback etc.), or agent/voice-driven orchestration composable into other skills.
+
+So Zotero is a reference MANAGER, not a discovery+verification PIPELINE. It's complementary, not a replacement. The natural hybrid: your pipeline does discover→verify→restrict (the agent-native part), then export to Zotero/BibTeX for library mgmt + citation styling (it has an API / pyzotero). But adopting it wholesale pulls you toward a manual GUI workflow — the opposite of the autonomous voice-driven thing you've built. Bottom line: it can't reliably do everything we did; it does a different, overlapping job.
+
+Net: ship after one adversarial test, build the router on top of cross-check, keep Zotero in your pocket only as an optional export target. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4742" user="vivekkmk" user_id="8558787718" ts="2026-06-02T02:51:01.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAIShmoeRRXmtoI8SVzuRjguBTuM0i4PAAIfCQACFtb4RCZyQ0KgGq6oOwQ" attachment_size="8376451" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-01T23:04:02-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Honestly? The tests you described ARE the adversarial tests — you've already done what I was about to suggest, and better, because they're real:
+
+• Karniadakis PIML (Nature Reviews) explicitly disambiguated from the PINNs/JCP paper = exactly the "two similar papers, same author" case. That's THE ambiguity stress test. Nailed it.
+• Tactile elastography (mostly-China authors, one at CMU, so recent you missed it in your own lit review) = the thin-training-data / websearch-dependent tail. Hardest category. Nailed it.
+• "Dario and Jared, seminal scaling laws" and bare acronyms VVT/VSWE = terse, name/acronym-only resolution. HARDER than typical, not easier. Nailed it.
+
+So you're not missing a failure category. You proved disambiguation-by-venue/method, recent-paper resolution, AND terse-reference resolution — across both the ai-ur cumulative track and a real user-folder slice. That's strong coverage.
+
+Your two methodological points are both correct:
+1. If I pick the test papers, it's circular — a different session of me just resolves what this session suggested. Don't let me. Your real references are the RIGHT test distribution because they ARE the deployment distribution. Real-slice testing beats synthetic adversarial sets for exactly that reason.
+2. Too-ambiguous breaks autonomy — right, and that's the point: "well-specified-but-nontrivial" is the target, and a real project slice has that property for free (you specified those refs because you actually know them).
+
+What's the ONE axis still untested? Pure SCALE — does the restriction layer hold when the pool is big (more entries = more distractors per match)? You don't manufacture that. Just take ONE larger real slice and run it once. Not for ambiguity (proven) — only to confirm a 40–60-entry pool still restricts cleanly. If it does, scale is proven.
+
+My call: one more run = your bigger real slice, once. Then ship regardless of 100% vs 90%. Stop inventing test papers — your backlog IS the test set, and it's a better one than anything I'd hand you. The taxing part (dreaming up varied well-specified refs) is exactly the part you can drop. 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4744" user="vivekkmk" user_id="8558787718" ts="2026-06-02T03:02:40.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISiGoeR9BcPcn28CBKVB5oNqHI-bEDAAIlCQACFtb4RKUeXWgwaX0vOwQ" attachment_size="7196040" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-01T23:41:31-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Strong call — I agree, drop Stack 2. Your reasoning is right, and it's your own philosophy applied:
+
+1. Stack 2 is the worst cost/reliability trade in the whole system — parallel swarm + heuristic classification, the one skill new_ideas.md itself flags "most complex, defer until last." High build cost, big error surface, slow.
+2. Its pattern is "manufacture a noisy data source, then spend machinery cleaning it." Anti-pattern. Cleaner to never make the noise.
+3. The two-part replacement is strictly better for your actual workflow:
+ • Human tree discipline — pure literature/ tree by construction, experiments/ + supplementary/ kept separate, copy a paper into an isolated experiment_* folder when you tinker. Clean source = nothing to misclassify.
+ • Context-augmented Stack 3 — because skills are model-driven, not hard-coded, pointing identify-papers-user(-tree) at a noisy old folder + saying "ignore non-PDFs / non-papers" does the classification inline. You just proved this in the run you kicked off.
+4. Nothing lost: "do I have dup copies and where" (Source paths / address-union) already lives in Stack 3.
+5. The ONLY thing Stack 2 uniquely had was blind-scan throughput on 1000s of PDFs — not your workflow (bounded, curated trees). YAGNI: if that need ever shows up, build it THEN, not speculatively.
+
+Wrote all of this to finishing_touches.md (new file), three points:
+(1) ship identify-papers-all router (faithfulness gate = reuse cross-check-papers-user) + 2nd-gen voice-writing-sample
+(2) investigate Zotero
+(3) eliminate Stack 2 — full reasoning above
+Left out the scale-test point since you're running it. The file notes the Stack 2 decision supersedes new_ideas.md.
+
+Want me to /gitcommit it? 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4756" user="vivekkmk" user_id="8558787718" ts="2026-06-02T03:38:37.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISlGoeUD14MDiErm1a-IIVK12u_WzjAAItCQACFtb4RIvZGWagc922OwQ" attachment_size="5370880" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
+
+## 2026-06-01T23:45:24-04:00
+
+**Telegram Input Detected = True**
+
+**mode:** audio
+
+**Chat ID:** 8558787718
+
+**Reply text:** Done, restructured exactly as you said:
+
+• stack2_elimination_reasoning.md (NEW) — the full "why Stack 2 is gone" reasoning lives here, on its own. Notes it supersedes Stack 2 in new_ideas.md.
+
+• finishing_touches.md — now just the TWO actionable points:
+  1. Ship identify-papers-all (wrapper on identify-papers-ai with disk-preference; faithfulness gate = reuse cross-check-papers-user) → feed it into 2nd-gen voice-writing-sample.
+  2. Investigate Zotero.
+
+Stack 2 is out of finishing_touches entirely — nothing to do there, just decided. Want me to /gitcommit both files? 🧡
+
+**Input prior to tool use:**
+```
+<channel source="plugin:telegram:telegram" chat_id="8558787718" message_id="4758" user="vivekkmk" user_id="8558787718" ts="2026-06-02T03:44:11.000Z" attachment_kind="voice" attachment_file_id="AwACAgEAAxkBAAISlmoeUYvJHhWNOo1odqZD4WUmtapzAAIuCQACFtb4RJFt9tHGoewxOwQ" attachment_size="1060536" attachment_mime="audio/ogg">
+(voice message)
+</channel>
+```
+
+---
